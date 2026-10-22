@@ -160,11 +160,11 @@ docs/adr/  architecture decision records
 
 ## Status and next steps
 
-See [`PROJECT_AUDIT_AND_ROADMAP.md`](PROJECT_AUDIT_AND_ROADMAP.md) for the
-audit this rebuild followed and what's still open, notably Hyperdrive pooling,
-a Content-Security-Policy, password reset, and dark mode.
+Still open: Cloudflare Hyperdrive for connection pooling, a
+Content-Security-Policy, password reset and email verification, OpenAPI docs,
+and dark mode. Known security gaps are listed in [SECURITY.md](SECURITY.md).
 
 ---
 
 Inkstack began as a Medium-style learning project (see the early git history)
-and was rebuilt around the problems in the audit above.
+and was rebuilt after a security and architecture audit of that version.
