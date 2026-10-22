@@ -11,6 +11,9 @@ export interface Bindings {
   AUTH_RATE_LIMITER?: RateLimit;
   // Static assets (the built frontend). Only bound in production.
   ASSETS?: Fetcher;
+  // Cloudflare Hyperdrive: pooled, warm connections near the database.
+  // Only bound in production; local dev and tests use DATABASE_URL directly.
+  HYPERDRIVE?: Hyperdrive;
 }
 
 export interface Variables {

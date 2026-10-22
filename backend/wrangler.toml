@@ -38,6 +38,12 @@ not_found_handling = "single-page-application"
 # everything else is served straight from the static assets.
 run_worker_first = ["/api/*", "/p/*"]
 
+# Connection pooling near the database. Query caching is disabled on purpose:
+# cached reads could show an author the old version of a post they just edited.
+[[env.production.hyperdrive]]
+binding = "HYPERDRIVE"
+id = "20a311317bfb43638e730ddad93d432a"
+
 [[env.production.ratelimits]]
 name = "AUTH_RATE_LIMITER"
 namespace_id = "1001"

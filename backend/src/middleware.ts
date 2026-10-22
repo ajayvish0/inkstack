@@ -12,7 +12,9 @@ import type { AppEnv } from "./types";
 // The connection is closed once the response is sent; leaving it open leaks a
 // database connection per request.
 export const withPrisma = createMiddleware<AppEnv>(async (c, next) => {
-  const prisma = getPrisma(c.env.DATABASE_URL);
+  // Through Hyperdrive when it's bound (production), so each request reuses a
+  // warm pooled connection instead of a new TLS + auth handshake to the database.
+  const prisma = getPrisma(c.env.HYPERDRIVE?.connectionString ?? c.env.DATABASE_URL);
   c.set("prisma", prisma);
   try {
     await next();

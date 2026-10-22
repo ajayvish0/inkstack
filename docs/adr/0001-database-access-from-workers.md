@@ -40,5 +40,26 @@ would stop reaching its database on that date.
   start-up); subsequent clients ~6 ms; a raw `pg` connect + query ~11 ms. Using
   `localhost` instead of `127.0.0.1` added ~2 s per connection (IPv6 `::1` tried
   first). These are dev-machine numbers, not production latency.
-- The Worker bundle grew to ~1.4 MB gzipped (query compiler WASM), within the
-  Workers free-plan 3 MB limit.
+- The Worker bundle grew to ~1.4 MB gzipped (query compiler WASM).
+
+## Update (2026-10-22): Hyperdrive in production
+
+After deploying, requests from India were served by Cloudflare's Chennai
+location while the database is in Neon's `us-east-2` (Ohio). Opening a new TLS
+Postgres connection across that distance on every request made even the
+health check take ~1.4–1.7 s.
+
+Production now binds **Cloudflare Hyperdrive** (`[[env.production.hyperdrive]]`)
+and the middleware uses `env.HYPERDRIVE.connectionString` when it's present,
+falling back to `DATABASE_URL` locally and in tests. Hyperdrive points at Neon's
+**direct** endpoint, since stacking it on Neon's own pooler adds a hop.
+
+**Query caching is disabled.** Hyperdrive caches read queries by default, and
+an author could then see the old version of a post they had just edited. A
+live check confirmed an edit is visible on the very next read.
+
+Measured from the same machine before and after (5 requests each; network
+conditions vary): health check ~1.4–1.7 s → mostly ~0.8 s; sign-in ~1.7–2.0 s →
+~0.8–1.1 s. The feed is still ~1.1–1.4 s because each request makes several
+queries that each cross to the US, so fewer round trips per request is the
+next improvement.
