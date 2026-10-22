@@ -1,25 +1,44 @@
-name = "backend"
-compatibility_date = "2023-12-01"
+# Inkstack API (and, in production, the web app) on Cloudflare Workers.
+name = "inkstack-dev"
+main = "src/index.ts"
+compatibility_date = "2026-10-01"
+# pg (used by @prisma/adapter-pg) needs Node.js APIs and TCP sockets.
+compatibility_flags = ["nodejs_compat"]
 
+# Secrets are never stored in this file.
+#   Local: copy .dev.vars.example to .dev.vars
+#   Production: npx wrangler secret put DATABASE_URL --env production
+#               npx wrangler secret put JWT_SECRET --env production
 [vars]
-DATABASE_URL=" "
-SECRET_KEY =" "
-compatibility_date = "2024-04-05"
+# The Vite dev server proxies /api here, so its origin may send cookie-authenticated writes.
+ALLOWED_ORIGINS = "http://localhost:5173,http://127.0.0.1:5173"
 
-# [vars]
-# MY_VAR = "my-variable"
-# [[kv_namespaces]]
-# binding = "MY_KV_NAMESPACE"
-# id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+[observability]
+enabled = true
 
-# [[r2_buckets]]
-# binding = "MY_BUCKET"
-# bucket_name = "my-bucket"
+[[ratelimits]]
+name = "AUTH_RATE_LIMITER"
+namespace_id = "1001"
+simple = { limit = 10, period = 60 }
 
-# [[d1_databases]]
-# binding = "DB"
-# database_name = "my-database"
-# database_id = ""
+# ---------------------------------------------------------------------------
+# Production: one Worker serves the built SPA and the API from the same origin,
+# so the session cookie is first-party and no CORS is needed.
+#   npm run deploy   (from the repo root: builds the frontend, then deploys)
+# ---------------------------------------------------------------------------
+[env.production]
+name = "inkstack"
+vars = { ALLOWED_ORIGINS = "" }
 
-# [ai]
-# binding = "AI"
+[env.production.assets]
+directory = "../frontend/dist"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+# The Worker handles the API and post pages (for link-preview meta tags);
+# everything else is served straight from the static assets.
+run_worker_first = ["/api/*", "/p/*"]
+
+[[env.production.ratelimits]]
+name = "AUTH_RATE_LIMITER"
+namespace_id = "1001"
+simple = { limit = 10, period = 60 }

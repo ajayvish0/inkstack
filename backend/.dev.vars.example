@@ -1,0 +1,5 @@
+# Copy to .dev.vars (git-ignored) for `npm run dev`.
+# Local Postgres from `npm run db:local` at the repo root, or any Postgres URL (e.g. Neon).
+DATABASE_URL="postgres://postgres:postgres@127.0.0.1:51214/template1?sslmode=disable"
+# 32+ random bytes, e.g.: node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
+JWT_SECRET="change-me"
