@@ -4,7 +4,10 @@
 Markdown with real code highlighting, private drafts, tags and search, and
 link previews that work when you share a post.
 
-![CI](https://github.com/ajayvish0/medium-project/actions/workflows/ci.yml/badge.svg)
+[![CI](https://github.com/ajayvish0/inkstack/actions/workflows/ci.yml/badge.svg)](https://github.com/ajayvish0/inkstack/actions/workflows/ci.yml)
+
+**Live: [inkstack.inkstack-api.workers.dev](https://inkstack.inkstack-api.workers.dev)**.
+Try the demo account `demo@inkstack.app` / `inkstack-demo`, or sign up.
 
 <!-- Add a screenshot or short GIF here: feed → post → editor → publish. -->
 
@@ -43,7 +46,7 @@ flowchart LR
   end
   API --> MW --> P[Prisma 7 + pg driver adapter]
   H --> P
-  P -->|TCP, one connection per request| DB[(PostgreSQL)]
+  P -->|Hyperdrive: pooled connections near the DB| DB[(PostgreSQL on Neon)]
   C[common/: zod schemas + API types] -.-> API
   C -.-> A
 ```
@@ -52,7 +55,7 @@ flowchart LR
 |---|---|
 | Web | React 18, TypeScript, Vite 6, Tailwind CSS, TanStack Query, React Router 7 |
 | API | Hono 4 on Cloudflare Workers, zod validation |
-| Data | PostgreSQL, Prisma ORM 7 with `@prisma/adapter-pg` |
+| Data | PostgreSQL (Neon), Prisma ORM 7 with `@prisma/adapter-pg`, Cloudflare Hyperdrive |
 | Shared | `@inkstack/common`: request schemas and response types used by both sides |
 | Quality | Vitest in the real Workers runtime (workerd) and jsdom, ESLint + jsx-a11y, GitHub Actions |
 
@@ -141,13 +144,32 @@ service container on every push.
 
 ## Deploy
 
+The live site runs on Cloudflare Workers with a [Neon](https://neon.tech) Postgres
+database, both on free plans. From `backend/`:
+
 ```bash
-cd backend
-npx wrangler secret put DATABASE_URL --env production   # a hosted Postgres, e.g. Neon
-npx wrangler secret put JWT_SECRET --env production
-DATABASE_URL=<same url> npm run db:migrate
-cd .. && npm run deploy                                  # builds the web app, deploys one Worker
+npx wrangler login
+
+# 1. Production secrets in a git-ignored file
+#    DATABASE_URL="postgresql://…neon.tech/neondb?sslmode=require"
+#    JWT_SECRET="<48+ random bytes>"
+#    (saved as backend/.env.production)
+
+# 2. Tables (use Neon's direct host, not "-pooler", for migrations)
+node --env-file=.env.production ../node_modules/prisma/build/index.js migrate deploy
+node --env-file=.env.production prisma/seed.mjs            # optional demo content
+
+# 3. Connection pooling near the database; put the printed id in
+#    wrangler.toml under [[env.production.hyperdrive]]
+npx wrangler hyperdrive create inkstack-db --connection-string="<direct Neon URL>" --caching-disabled
+
+# 4. Build and deploy one Worker (secrets are uploaded the first time)
+cd .. && npm run build && cd backend
+npx wrangler deploy --env production --minify --secrets-file .env.production
 ```
+
+After that, `npm run deploy` from the repo root ships updates;
+`npx wrangler rollback --env production` undoes a bad one.
 
 ## Project structure
 
@@ -160,7 +182,8 @@ docs/adr/  architecture decision records
 
 ## Status and next steps
 
-Still open: Cloudflare Hyperdrive for connection pooling, a
+Still open: fewer database round trips per request (the app is served from
+the edge nearest each reader, the database sits in one US region), a
 Content-Security-Policy, password reset and email verification, OpenAPI docs,
 and dark mode. Known security gaps are listed in [SECURITY.md](SECURITY.md).
 
