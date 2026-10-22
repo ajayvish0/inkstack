@@ -1,13 +1,33 @@
-@import url("https://fonts.googleapis.com/css2?family=Syne:wght@400..800&display=swap");
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
-  * {
-    font-family: "Syne", "sans-serif";
-    font-optical-sizing: auto;
-    font-weight: 200, 300, 400, 500, 600, 700, 800;
-    font-style: normal;
+  :focus-visible {
+    @apply outline-none ring-2 ring-ink-500 ring-offset-2;
   }
 }
+
+/* Code highlighting (highlight.js classes), tuned to the ink palette. */
+.prose pre {
+  @apply rounded-lg bg-ink-950 text-[0.875em] leading-relaxed;
+}
+.prose :not(pre) > code {
+  @apply rounded bg-slate-100 px-1.5 py-0.5 font-normal text-ink-800 before:content-none after:content-none;
+}
+.hljs-comment,
+.hljs-quote { color: #8b96b5; font-style: italic; }
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-literal { color: #c4a7ff; }
+.hljs-string,
+.hljs-attr,
+.hljs-template-tag { color: #9fe0b5; }
+.hljs-number,
+.hljs-built_in,
+.hljs-type { color: #ffcf8a; }
+.hljs-title,
+.hljs-section,
+.hljs-function .hljs-title { color: #8cc8ff; }
+.hljs-variable,
+.hljs-params { color: #e6e9f2; }
