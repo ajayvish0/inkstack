@@ -1,0 +1,23 @@
+{
+  "name": "inkstack",
+  "private": true,
+  "description": "A writing platform for developers, running on Cloudflare's edge.",
+  "workspaces": [
+    "common",
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "dev:api": "npm run dev -w backend",
+    "dev:web": "npm run dev -w frontend",
+    "db:local": "npx prisma dev --name inkstack --detach",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "build": "npm run build -w frontend",
+    "deploy": "npm run build && npm run deploy -w backend"
+  },
+  "engines": {
+    "node": ">=22.12"
+  }
+}
