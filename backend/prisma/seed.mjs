@@ -186,25 +186,6 @@ While measuring, the first query of every request took **2.8 seconds**. On Windo
 
 Measure before you optimise — the slow part was nowhere near where I expected.`,
   },
-  {
-    title: "Welcome to Inkstack",
-    tags: ["meta"],
-    daysAgo: 12,
-    content: `Inkstack is a small, fast place for developers to publish what they learn while building things.
-
-## What you can do
-
-- Write in **Markdown**, with tables and syntax-highlighted code blocks.
-- Keep posts as **drafts** until they're ready — drafts are only visible to you.
-- Add up to five **tags** so readers can find related posts.
-- **Search** across every published post.
-
-## How it's built
-
-The whole app runs on a single Cloudflare Worker: a Hono API, a React front end served as static assets, and Postgres through Prisma. Sessions use an HttpOnly cookie, passwords are hashed with PBKDF2, and every write is checked against CSRF.
-
-This post and the others on the front page were written for the demo account. Sign up and publish your own — it takes about ten seconds.`,
-  },
 ];
 
 const client = new pg.Client({ connectionString: process.env.DATABASE_URL });
